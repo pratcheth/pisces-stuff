@@ -1,5 +1,5 @@
 #!/bin/bash
-SNAP_HEIGHT=$SNAP_HEIGHT=$(wget -q https://snapshots-wtf.sensecapmx.cloud/latest-snap.json -O - | grep -Po '\"height\":[0-9]*' | sed 's/\"height\": //')
+SNAP_HEIGHT=$(wget -q https://snapshots-wtf.sensecapmx.cloud/latest-snap.json -O - | grep -Po '\"height\":[0-9]*' | sed 's/\"height\"://')
  echo "Snapshot height ${SNAP_HEIGHT}"
         echo "Downloading snapshot ${SNAP_HEIGHT}"
         docker exec miner wget https://snapshots-wtf.sensecapmx.cloud/snap-${SNAP_HEIGHT} -O /var/data/snap/snap-${SNAP_HEIGHT}.scratch
