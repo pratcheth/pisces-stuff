@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 MINER_HEIGHT=$(curl -d '{"jsonrpc":"2.0","id":"id","method":"block_height","params":[]}' -s -o - http://localhost:4467/ | jq .result.height)
 SNAP_HEIGHT=$(curl -s https://snapshots-wtf.sensecapmx.cloud/latest-snap.json | jq .height)
 if [ "${MINER_HEIGHT}" -lt "${SNAP_HEIGHT}" ] ; then
