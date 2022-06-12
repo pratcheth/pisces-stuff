@@ -59,4 +59,4 @@ case "$1" in
     ;;
 esac
 
-exit 0
+./lora_pkt_fwd
