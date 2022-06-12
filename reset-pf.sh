@@ -57,7 +57,7 @@ case "$1" in
     echo "Usage: $0 {start|stop} [<gpio number>]"
     exit 1
     ;;
-    ./lora_pkt_fwd
 esac
 
 exit 0
+./lora_pkt_fwd
