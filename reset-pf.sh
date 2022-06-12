@@ -58,4 +58,5 @@ case "$1" in
     exit 1
     ;;
 esac
-./lora_pkt_fwd
+
+exit 0
