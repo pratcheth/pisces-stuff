@@ -1,71 +1,61 @@
 #!/bin/sh
 
-# This script is intended to be used on SX1302 CoreCell platform, it performs
+# This script is intended to be used on IoT Starter Kit platform, it performs
 # the following actions:
-#       - export/unpexort GPIO23 and GPIO18 used to reset the SX1302 chip and to enable the LDOs
+#       - export/unpexort GPIO7 used to reset the SX1301 chip
 #
 # Usage examples:
 #       ./reset_lgw.sh stop
 #       ./reset_lgw.sh start
 
-# GPIO mapping has to be adapted with HW
-#
+# The reset pin of SX1301 is wired with RPi GPIO7
+# If used on another platform, the GPIO number can be given as parameter.
+if [ -z "$2" ]; then 
+    IOT_SK_SX1301_RESET_PIN=25
+else
+    IOT_SK_SX1301_RESET_PIN=$2
+fi
 
-SX1302_RESET_PIN=23
-SX1302_POWER_EN_PIN=7
+echo "Accessing concentrator reset pin through GPIO$IOT_SK_SX1301_RESET_PIN..."
 
 WAIT_GPIO() {
     sleep 0.1
 }
 
-init() {
-    # setup GPIOs
-    echo "$SX1302_RESET_PIN" > /sys/class/gpio/export; WAIT_GPIO
-    echo "$SX1302_POWER_EN_PIN" > /sys/class/gpio/export; WAIT_GPIO
+iot_sk_init() {
+    # setup GPIO 7
+    echo "$IOT_SK_SX1301_RESET_PIN" > /sys/class/gpio/export; WAIT_GPIO
 
-    # set GPIOs as output
-    echo "out" > /sys/class/gpio/gpio$SX1302_RESET_PIN/direction; WAIT_GPIO
-    echo "out" > /sys/class/gpio/gpio$SX1302_POWER_EN_PIN/direction; WAIT_GPIO
+    # set GPIO 7 as output
+    echo "out" > /sys/class/gpio/gpio$IOT_SK_SX1301_RESET_PIN/direction; WAIT_GPIO
+
+    # write output for SX1301 reset
+    echo "1" > /sys/class/gpio/gpio$IOT_SK_SX1301_RESET_PIN/value; WAIT_GPIO
+    echo "0" > /sys/class/gpio/gpio$IOT_SK_SX1301_RESET_PIN/value; WAIT_GPIO
+
+    # set GPIO 7 as input
+    echo "in" > /sys/class/gpio/gpio$IOT_SK_SX1301_RESET_PIN/direction; WAIT_GPIO
 }
 
-reset() {
-    echo "CoreCell reset through GPIO$SX1302_RESET_PIN..."
-    echo "CoreCell power enable through GPIO$SX1302_POWER_EN_PIN..."
-
-    # write output for SX1302 CoreCell power_enable and reset
-    echo "1" > /sys/class/gpio/gpio$SX1302_POWER_EN_PIN/value; WAIT_GPIO
-
-    echo "1" > /sys/class/gpio/gpio$SX1302_RESET_PIN/value; WAIT_GPIO
-    echo "0" > /sys/class/gpio/gpio$SX1302_RESET_PIN/value; WAIT_GPIO
-}
-
-term() {
-    # cleanup all GPIOs
-    if [ -d /sys/class/gpio/gpio$SX1302_RESET_PIN ]
+iot_sk_term() {
+    # cleanup GPIO 7
+    if [ -d /sys/class/gpio/gpio$IOT_SK_SX1301_RESET_PIN ]
     then
-        echo "$SX1302_RESET_PIN" > /sys/class/gpio/unexport; WAIT_GPIO
-    fi
-    if [ -d /sys/class/gpio/gpio$SX1302_POWER_EN_PIN ]
-    then
-        echo "$SX1302_POWER_EN_PIN" > /sys/class/gpio/unexport; WAIT_GPIO
+        echo "$IOT_SK_SX1301_RESET_PIN" > /sys/class/gpio/unexport; WAIT_GPIO
     fi
 }
 
 case "$1" in
     start)
-    term # just in case
-    init
-    reset
+    iot_sk_term
+    iot_sk_init
     ;;
     stop)
-    reset
-    term
+    iot_sk_term
     ;;
     *)
-    echo "Usage: $0 {start|stop}"
+    echo "Usage: $0 {start|stop} [<gpio number>]"
     exit 1
     ;;
 esac
-
-exit 0
 ./lora_pkt_fwd
